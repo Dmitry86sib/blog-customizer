@@ -71,7 +71,7 @@
 		"commit": "npm run test && cz",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
-		"postinstall": "npx playwright install chromium"
+		"postinstall": "PLAYWRIGHT_DOWNLOAD_PATH=local npx playwright install chromium --with-deps"
 	},
 	"eslintConfig": {
 		"extends": [
