@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import clsx from 'clsx';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 import { Select } from 'src/ui/select';
@@ -19,52 +20,51 @@ import {
 import styles from './ArticleParamsForm.module.scss';
 
 interface Props {
-	isOpen: boolean;
-	onToggle: () => void;
 	setPageState: (state: ArticleStateType) => void;
+	initialState: ArticleStateType;
 }
 
-export const ArticleParamsForm = ({
-	isOpen,
-	onToggle,
-	setPageState,
-}: Props) => {
-	const [formState, setFormState] = useState(defaultArticleState);
+export const ArticleParamsForm = ({ setPageState, initialState }: Props) => {
+	const [formState, setFormState] = useState(initialState);
+	const [isFormOpen, setIsFormOpen] = useState(false);
 
-	// Создаём реф для сайдбара
 	const asideRef = useRef<HTMLDivElement | null>(null);
 
-	// Подписываемся на клики по документу
 	useEffect(() => {
+		if (!isFormOpen) return;
 		const handleClickOutside = (e: MouseEvent) => {
-			if (!isOpen) return;
 			if (asideRef.current && !asideRef.current.contains(e.target as Node)) {
-				onToggle(); // закрываем
+				setIsFormOpen(false);
 			}
 		};
 
 		document.addEventListener('mousedown', handleClickOutside);
 		return () => document.removeEventListener('mousedown', handleClickOutside);
-	}, [isOpen, onToggle]);
+	}, [isFormOpen]);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setPageState(formState);
 	};
 
-	const handleReset = () => {
+	const handleReset = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
 		setFormState(defaultArticleState);
 		setPageState(defaultArticleState);
 	};
 
 	return (
 		<div ref={asideRef}>
-			<ArrowButton isOpen={isOpen} onClick={onToggle} />
+			<ArrowButton
+				isOpen={isFormOpen}
+				onClick={() => setIsFormOpen(!isFormOpen)}
+			/>
 			<aside
-				className={`${styles.container} ${
-					isOpen ? styles.container_open : ''
-				}`}>
-				<form className={styles.form} onSubmit={handleSubmit}>
+				className={clsx(styles.container, isFormOpen && styles.container_open)}>
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					onReset={handleReset}>
 					<Text as='h1' size={31} weight={800} uppercase dynamicLite>
 						Задайте параметры
 					</Text>
@@ -143,12 +143,7 @@ export const ArticleParamsForm = ({
 					</div>
 
 					<div className={styles.bottomContainer}>
-						<Button
-							title='Сбросить'
-							htmlType='button'
-							type='clear'
-							onClick={handleReset}
-						/>
+						<Button title='Сбросить' htmlType='reset' type='clear' />
 						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
